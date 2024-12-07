@@ -4,83 +4,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
+            background: linear-gradient(to bottom right, #007bff, #6c757d);
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
             margin: 0;
         }
-
         .login-container {
-            background: #fff;
+            background-color: #fff;
             border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            width: 350px;
-            padding: 30px;
-            text-align: center;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
-
-        .login-container h1 {
-            font-size: 24px;
+        .login-header {
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
             margin-bottom: 20px;
             color: #333;
         }
-
-        .login-container input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-
-        .login-container button {
-            width: 100%;
-            padding: 10px;
+        .btn-custom {
             background-color: #007bff;
-            border: none;
-            border-radius: 5px;
             color: white;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 10px;
+            border: none;
         }
-
-        .login-container button:hover {
+        .btn-custom:hover {
             background-color: #0056b3;
         }
-
-        .login-container p {
-            font-size: 14px;
-            color: #666;
-            margin-top: 20px;
-        }
-
-        .login-container p a {
-            color: #007bff;
-            text-decoration: none;
-        }
-
-        .login-container p a:hover {
-            text-decoration: underline;
+        .form-control {
+            height: 50px;
         }
     </style>
 </head>
 <body>
     <div class="login-container">
-        <h1>Login</h1>
+        <div class="login-header">Login</div>
         <form action="/login" method="POST">
-            <!-- Token CSRF -->
-            <input type="hidden" name="_token" value="{{ csrf_token() }}">
-            <input type="email" name="email" placeholder="Email" required>
-            <input type="password" name="password" placeholder="Password" required>
-            <button type="submit">Login</button>
+            @csrf
+            <div class="mb-3">
+                <input type="email" name="email" class="form-control" placeholder="Email Address" required>
+            </div>
+            <div class="mb-3">
+                <input type="password" name="password" class="form-control" placeholder="Password" required>
+            </div>
+            <button type="submit" class="btn btn-custom w-100">Login</button>
         </form>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

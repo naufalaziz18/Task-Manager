@@ -3,22 +3,35 @@
 namespace App\Http\Controllers;
 
 use App\Models\Task;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class TaskController extends Controller
 {
-    // Menampilkan halaman dashboard dengan task milik user yang login
-    public function index()
-    {
-        // Ambil data tugas milik user yang sedang login
-        $tasks = Task::where('user_id', auth()->id())->get();
+    /**
+     * Menampilkan halaman dashboard dengan task milik user yang login.
+     */
+    public function index(Request $request)
+{
+    // Ambil query pencarian dari input
+    $search = $request->input('search');
 
-        // Kirim data tugas ke view
-        return view('tasks.index', compact('tasks'));
-    }
+    // Ambil tugas milik user yang sedang login dan berdasarkan pencarian
+    $tasks = Task::where('user_id', auth()->id())
+        ->when($search, function ($query, $search) {
+            return $query->where('title', 'like', "%{$search}%")
+                         ->orWhere('name', 'like', "%{$search}%");
+        })
+        ->get();
 
-    // Menyimpan task baru
+    // Kirim data tugas ke view
+    return view('tasks.index', compact('tasks'));
+}
+
+    /**
+     * Menyimpan task baru.
+     */
     public function store(Request $request)
     {
         // Validasi input
@@ -38,22 +51,34 @@ class TaskController extends Controller
         return redirect('/dashboard');
     }
 
-    // Memperbarui status task
+    /**
+     * Memperbarui status task.
+     */
     public function update(Request $request, Task $task)
     {
-        // Memastikan hanya user yang membuat task yang bisa memperbaruinya
+        // Pastikan hanya user yang membuat task bisa memperbarui
         if ($task->user_id !== auth()->id()) {
             return redirect('/dashboard')->withErrors('Unauthorized action.');
         }
 
-        $task->update([
-            'is_completed' => $request->boolean('is_completed', false), // Default ke false
+        // Validasi input
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
         ]);
 
-        return redirect('/dashboard');
+        // Perbarui data
+        $task->update([
+            'title' => $request->input('title'),
+            'name' => $request->input('name'),
+        ]);
+
+        return redirect('/dashboard')->with('success', 'Task updated successfully.');
     }
 
-    // Menghapus task
+    /**
+     * Menghapus task.
+     */
     public function destroy(Task $task)
     {
         // Memastikan hanya user yang membuat task yang bisa menghapusnya
@@ -65,7 +90,9 @@ class TaskController extends Controller
         return redirect('/dashboard');
     }
 
-    // Proses login
+    /**
+     * Proses login.
+     */
     public function login(Request $request)
     {
         // Validasi input data
@@ -82,10 +109,36 @@ class TaskController extends Controller
         return back()->withErrors(['message' => 'Login gagal, coba lagi.']);
     }
 
-    // Proses logout
+    /**
+     * Proses logout.
+     */
     public function logout()
     {
         Auth::logout();
         return redirect('/');
+    }
+
+    /**
+     * Metode untuk ekspor data ke PDF.
+     */
+    public function exportPdf()
+    {
+        $tasks = Task::where('user_id', auth()->id())->get(); // Ambil data milik user login
+
+        // Generate PDF dari tampilan
+        $pdf = Pdf::loadView('tasks.pdf', compact('tasks'));
+
+        // Unduh file PDF
+        return $pdf->download('tasks.pdf');
+    }
+
+    public function edit(Task $task)
+    {
+        // Pastikan hanya user yang membuat task bisa mengedit
+        if ($task->user_id !== auth()->id()) {
+            return redirect('/dashboard')->withErrors('Unauthorized action.');
+        }
+
+        return view('tasks.edit', compact('task'));
     }
 }
